@@ -1,13 +1,153 @@
-.gird-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    height: 500px;
-    .gird {
-        width: 50%;
-        .answer {
+.gird-mode {
+    .header {
+        padding: 20px;
+        font-size: 60px;
+    }
+    .gird-wrapper {
+        padding-bottom: 450px;
+        overflow: hidden;
+        .gird {
+            float: left;
+            width: 50%;
+            box-sizing: border-box;
+            padding: 10px;
+            &.current {
+                background: #fafafa;
+            }
             .text {
-                height: 100px;
+                width: 100%;
+                display: block;
+                padding: 10px 0;
+                overflow: auto;
+                word-wrap: break-all;
             }
         }
     }
+
+}
+.control-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 350px;
+    z-index: 1000;
+    padding-top: 70px;
+    background: #fff;
+    box-shadow: 0 0 10px 0 #999999;
+    .control-btn-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        .btn-pre {
+            background: url('./img/pre.png') no-repeat center center;
+        }
+        .btn-next {
+            background: url('./img/next.png') no-repeat center center;
+        }
+        .btn-siri {
+            background: url('./img/siri.png') no-repeat center center;
+        }
+        .btn-grid {
+            background: url('./img/grid.png') no-repeat center center;
+        }
+        .btn-save {
+            background: url('./img/save.png') no-repeat center center;
+        }
+        .btn-direct {
+            width: 60px;
+            height: 60px;
+            margin: 0 20px;
+            background-size: 100% 100%;
+        }
+    }
+    .speech-btn {
+        width: 130px;
+        height: 130px;
+        margin: 0 20px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        background: #333333;
+        &.recording {
+            background: #666666;
+            animation: recording 1s infinite alternate;
+        }
+        @keyframes recording {
+            from {
+                box-shadow: 0 0 0 0;
+            }
+            to {
+                box-shadow: 0 0 50px 0;
+            }
+        }
+        &.loading {
+            position: relative;
+            background: #999999;
+            animation: loading .5s linear infinite;
+            &:before {
+                position: absolute;
+                content: '';
+                top: -10px;
+                left: 60px;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #999999;
+            }
+        }
+        @keyframes loading {
+            0% {
+                transform: rotate(0);
+            }
+            25% {
+                transform: rotate(90deg);
+            }
+            50% {
+                transform: rotate(180deg);
+            }
+            75% {
+                transform: rotate(270deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    }
+    .log {
+        padding: 0 20px;
+        text-align: center;
+    }
+}
+
+.siri-mode {
+    .context-wrapper {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 350px;
+        left: 0;
+        .context-item-wrapper {
+            padding: 30px;
+            overflow: hidden;
+        }
+        .context-item {
+            padding: 10px 30px;
+            line-height: 60px;
+            font-size: 40px;
+            border-radius: 40px;
+            color: #fff;
+            &.left {
+                float: left;
+                background: #999999;
+            }
+            &.right {
+                float: right;
+                background: #0099ff;
+            }
+        }
+        .holder {
+            height: 100vh;
+        }
+    }    
 }
