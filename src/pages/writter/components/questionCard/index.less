@@ -1,0 +1,61 @@
+@blue: #399cef;
+
+.question-card {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 0 50px 20px #3456f6;
+    overflow: hidden;
+    .img-area {
+        height: 50%;
+        background: #f3f3f3;
+        .img {
+            width: 100%;
+            height: 100%;
+            background: url('./img/img.jpg') no-repeat center center;
+            background-size: contain;
+        }
+    }
+    .main-area {
+        position: relative;
+        height: 50%;
+        padding: 0 40px;
+        text-align: center;
+        overflow: hidden;
+        .question {
+            margin-top: 40px;
+            line-height: 60px;
+            font-size: 40px;
+            color: @blue;
+        }
+        .answer {
+            line-height: 50px;
+            font-size: 30px;
+            color: @blue;
+        }
+        .control-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 50px;
+            height: 90px;
+            text-align: center;
+            .btn {
+                display: inline-block;
+                width: 480px;
+                height: 90px;
+                line-height: 90px;
+                font-size: 34px;
+                color: #ffffff;
+                background: #38a2fa;
+                border-radius: 45px;
+                text-align: center;
+                &.disable {
+                    background: #999999;
+                }
+            }
+        }
+    }
+}

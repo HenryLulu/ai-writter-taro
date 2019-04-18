@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
-import counter from './counter'
+import question from './writter/question'
 
 export default combineReducers({
-  counter
+    question
 })

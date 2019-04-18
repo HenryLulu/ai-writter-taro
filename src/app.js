@@ -20,13 +20,14 @@ class App extends Component {
 
   config = {
     pages: [
-      'pages/index/index'
+    //   'pages/v1/index',
+      'pages/writter/index'
     ],
     window: {
       backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#fff',
+      navigationBarBackgroundColor: '#354df8',
       navigationBarTitleText: '语音日记',
-      navigationBarTextStyle: 'black'
+      navigationBarTextStyle: '#ffffff'
     }
   }
 

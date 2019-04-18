@@ -1,9 +1,8 @@
 import Taro, { Component } from '@tarojs/taro'
-import { View, Button, Text, Input, Textarea, ScrollView } from '@tarojs/components'
+import { View, Button, Text, Input, Textarea, ScrollView, Canvas } from '@tarojs/components'
 import { connect } from '@tarojs/redux'
 
 import './index.less';
-import nextPng from './img/next.png';
 
 export default class extends Component {
 
@@ -17,23 +16,23 @@ export default class extends Component {
             questions: [
                 {
                     index: 1,
-                    text: '今天心情怎么样？',
+                    text: '今天心情怎么样呢？',
                     answer: ''
                 }, {
                     index: 2,
-                    text: '今天吃了什么？',
+                    text: '今天吃了什么呀？',
                     answer: ''
                 }, {
                     index: 3,
-                    text: '今天最有意义的事',
+                    text: '今天最有意义的事是什么呢',
                     answer: ''
                 }, {
                     index: 4,
-                    text: '今天最烦的事',
+                    text: '今天最烦的事又是什么呢',
                     answer: ''
                 }, {
                     index: 5,
-                    text: 'freestyle形容今天',
+                    text: 'freestyle形容今天吧',
                     answer: ''
                 }, {
                     index: 6,
@@ -42,7 +41,8 @@ export default class extends Component {
                 }
             ],
             siriContext: [],
-            currentSiriContextKey: ''
+            currentSiriContextKey: '',
+            shareShown: false
         };
         this.recorder = Taro.getRecorderManager();
         this.recorder.onStop(res => {
@@ -52,16 +52,18 @@ export default class extends Component {
 
     componentDidMount() {
         const now = new Date();
+        const starter = `大宝贝，欢迎来到语音日记，今天是${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日，咱们开始吧`;
         this.pushSiriContext([{
             side: 'left',
-            text: `欢迎来到语音日记，今天是${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日咱们开始吧`
+            text: starter
         }]);
-        setTimeout(() => {
+        this.bar(starter, () => {
             this.pushSiriContext([{
                 side: 'left',
                 text: this.state.questions[this.state.currentQuestionIndex].text
             }]);
-        }, 1500);
+            this.bar(this.state.questions[this.state.currentQuestionIndex].text)
+        });
     }
 
     pushSiriContext = (context, callback) => {
@@ -186,6 +188,7 @@ export default class extends Component {
                     side: 'left',
                     text: this.state.questions[this.state.currentQuestionIndex].text
                 }]);
+                this.bar(this.state.questions[this.state.currentQuestionIndex].text);
             });
         }
     }
@@ -206,6 +209,7 @@ export default class extends Component {
                     side: 'left',
                     text: this.state.questions[this.state.currentQuestionIndex].text
                 }]);
+                this.bar(this.state.questions[this.state.currentQuestionIndex].text);
             });    
         }
     }
@@ -216,7 +220,26 @@ export default class extends Component {
                 side: 'left',
                 text: this.state.questions[this.state.currentQuestionIndex].text
             }]);
+            this.bar(this.state.questions[this.state.currentQuestionIndex].text);
         });
+    }
+
+    bar = (text, cb) => {
+        cb = cb || (() => {});
+        this.player = Taro.createInnerAudioContext();
+        this.player.obeyMuteSwitch = false;
+        this.player.autoplay = true;
+        this.player.onEnded(res => {
+            cb();
+        });
+        this.player.onPlay(res => {
+            console.log(res)
+        });
+        this.player.onError(res => {
+            console.log(res)
+            cb();
+        });
+        this.player.src = `https://chiyuanyuan.com/aiwritter/tts.mp3?text=${encodeURI(text)}`
     }
 
     handleInput = data => {
@@ -245,9 +268,69 @@ export default class extends Component {
         });
     }
 
+    drawShare = () => {
+        let anchorY = 40;
+        const fillText = (ctx, text) => {
+            const lineLen = 22;
+            while (text.length > 0) {
+                ctx.fillText(text.slice(0, lineLen), 20, anchorY);
+                anchorY += 20;
+                text = text.slice(lineLen)
+            }
+        }
+
+        this.setState({shareShown: true}, () => {
+            const ctx = Taro.createCanvasContext('share', this.$scope);
+            // w: 300
+
+            ctx.setFontSize(12);
+            this.state.questions.forEach(Q => {
+                if (true || Q.answer) {
+                    ctx.setFillStyle('#000');
+                    fillText(ctx, '--------------------');
+                    fillText(ctx, Q.text);
+                    ctx.setFillStyle('#333');
+                    fillText(ctx, Q.answer);
+                }
+            });
+            ctx.draw()
+        });
+    }
+
+    downShare = () => {
+        Taro.canvasToTempFilePath({
+            canvasId: 'share'
+        }, this.$scope).then(res => {
+            Taro.saveImageToPhotosAlbum({
+                filePath: res.tempFilePath
+            }).then(() => {
+                Taro.showToast({
+                    title: '保存成功'
+                })
+            });
+        })
+    }
+
+    closeShare = () => {
+        this.setState({shareShown: false});
+    }
+
+    killTouch = e => {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+
     render() {
 
         const ControlBar = <View className="control-bar">
+            {this.state.shareShown && <View className="share-mask" onTouchMove={this.killTouch}>
+                <Canvas canvasId="share" className="share-canvas" style="width: 300px; height: 500px;"
+                    disableScroll={true}/>
+                <View className="btn-wrapper">
+                    <View className="btn-down btn" onClick={this.downShare}></View>
+                    <View className="btn-close btn" onClick={this.closeShare}></View>
+                </View>
+            </View>}
             <View className="control-btn-wrapper">
                 {this.state.mode === 'grid' && <View className="btn-siri btn-direct"
                     onClick={() => {this.setState({mode: 'siri'})}}></View>}
@@ -259,40 +342,42 @@ export default class extends Component {
                     onTouchEnd={this.endRecord}
                 ></View>
                 <View className="btn-next btn-direct" onClick={this.next}></View>
-                <View className="btn-save btn-direct"></View>
+                <View className="btn-save btn-direct" onClick={this.drawShare}></View>
             </View>
-            {/* <View className="log">{this.state.console}</View> */}
+            <View className="log">按住说话</View>
         </View>;
 
         const now = new Date();
-        return this.state.mode === 'grid'
-        ? <View className="gird-mode">
-            <View className="header">{`${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`}</View>
-            <View className="gird-wrapper">
-                {this.state.questions.map((Q, index) => <View key={Q.index}
-                    className={`gird ${index === this.state.currentQuestionIndex ? 'current' : ''}`}>
-                    <View className="question"
-                        onClick={this.jump.bind(this, index)}>{Q.text}</View>
-                    <Textarea className="text" type='text' value={Q.answer || ''}
-                        onFocus={this.jump.bind(this, index)}
-                        onInput={this.handleType.bind(this, Q)}
-                    />
-                </View>)}
+        return <View className="body">
+            {this.state.mode === 'grid'
+            ? <View className="gird-mode">
+                <View className="header">{`${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`}</View>
+                <View className="gird-wrapper">
+                    {this.state.questions.map((Q, index) => <View key={Q.index}
+                        className={`gird ${index === this.state.currentQuestionIndex ? 'current' : ''}`}>
+                        <View className="question"
+                            onClick={this.jump.bind(this, index)}>{Q.text}</View>
+                        <Textarea className="text" type='text' value={Q.answer || ''}
+                            onFocus={this.jump.bind(this, index)}
+                            onInput={this.handleType.bind(this, Q)}
+                        />
+                    </View>)}
+                </View>
+                {ControlBar}
             </View>
-            {ControlBar}
-        </View>
-        : <View className="siri-mode">
-            <ScrollView className="context-wrapper"
-                scrollY={true}
-                scrollIntoView={this.state.currentSiriContextKey}
-                scrollWithAnimation={true}
-            >
-                {this.state.siriContext.map(C => <View id={C.key} className="context-item-wrapper">
-                    <View className={`context-item ${C.side}`}>{C.text}</View>
-                </View>)}
-                <View className="holder"></View>
-            </ScrollView>
-            {ControlBar}
+            : <View className="siri-mode">
+                <ScrollView className="context-wrapper"
+                    scrollY={true}
+                    scrollIntoView={this.state.currentSiriContextKey}
+                    scrollWithAnimation={true}
+                >
+                    {this.state.siriContext.map(C => <View id={C.key} className="context-item-wrapper">
+                        <View className={`context-item ${C.side}`}>{C.text}</View>
+                    </View>)}
+                    <View className="holder"></View>
+                </ScrollView>
+                {ControlBar}
+            </View>}
         </View>
     }
 }
